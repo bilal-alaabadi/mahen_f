@@ -1,8 +1,8 @@
 // HeroSection.jsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import card1 from "../../assets/IMG_7112.PNG";
-import card2 from "../../assets/IMG_7110.PNG";
+import card1 from "../../assets/IMG_7112.png";
+import card2 from "../../assets/IMG_7110.png";
 import log from "../../assets/00-1.png"; // شعار الأنثور
 
 const cards = [
