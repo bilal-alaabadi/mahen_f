@@ -1,26 +1,25 @@
 import React from 'react'
+import { motion, useAnimation } from 'framer-motion'
+import bner from "../../assets/00-5.png"
 
 const PromoBanner = () => {
+  const controls = useAnimation();
+
   return (
-    <section className='section__container banner__container'>
-          <div className='banner__card text-center p-6 bg-white rounded-lg shadow-md'>
-        <span className='text-3xl text-primary'><i className="ri-truck-line"></i></span>
-        <h4 className='text-xl font-bold text-gray-800 mt-4'>توصيل مجاني</h4>
-        <p className='text-gray-600 mt-2'>يوفر الراحة والقدرة على التسوق من أي مكان وفي أي وقت.</p>
+    <div>
+      <motion.img
+        src={bner}
+        alt=""
+        initial={{ opacity: 0, y: -80 }}         // يبدأ من الأعلى
+        animate={controls}
+        whileInView={{ opacity: 1, y: 0 }}       // ينزل للأسفل
+        viewport={{ amount: 0.5 }}               // يشتغل مع كل نزول بالصورة
+        onViewportLeave={() => controls.start({ opacity: 0, y: -80 })} // يرجع للأعلى عند الخروج
+        transition={{ type: "spring", stiffness: 120, damping: 18 }}
+        style={{ width: "100%", height: "auto", display: "block" }}
+      />
     </div>
-    <div className='banner__card text-center p-6 bg-white rounded-lg shadow-md'>
-        <span className='text-3xl text-primary'><i className="ri-money-dollar-circle-line"></i></span>
-        <h4 className='text-xl font-bold text-gray-800 mt-4'>ضمان استرداد الأموال 100%</h4>
-        <p className='text-gray-600 mt-2'>تتمتع المتاجر الإلكترونية بنظام تقييم حيث يمكن للعملاء مشاركة آرائهم.</p>
-    </div>
-    <div className='banner__card text-center p-6 bg-white rounded-lg shadow-md'>
-        <span className='text-3xl text-primary'><i className="ri-user-voice-fill"></i></span>
-        <h4 className='text-xl font-bold text-gray-800 mt-4'>دعم قوي</h4>
-        <p className='text-gray-600 mt-2'>نقدم خدمات دعم العملاء لمساعدتهم في الاستفسارات والمشكلات.</p>
-</div>
-    </section>
   )
 }
 
 export default PromoBanner
-

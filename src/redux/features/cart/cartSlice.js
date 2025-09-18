@@ -7,8 +7,8 @@ const DEFAULTS = {
   products: [],
   selectedItems: 0,
   totalPrice: 0,   // بالعملة الأساسية (ر.ع.)
-  shippingFee: 2,  // بالعملة الأساسية
-  country: "عمان",
+  shippingFee: 2,  // بالعملة الأساسية (للاستخدامات العامة فقط)
+  country: "عُمان",
   giftCard: null,  // { from, to, phone, note }
 };
 
@@ -58,17 +58,12 @@ const makeLineKey = (p) => {
   return `${id}::${m}::${gift}`;
 };
 
-// حساب إجمالي السطر بعد خصم الأزواج في العملة الأساسية (ر.ع.)
+// حساب إجمالي السطر في العملة الأساسية (ر.ع.) — (ألغينا خصم الشيلات)
 const lineTotalBase = (product) => {
   const unit = Number(product.price || 0); // سعر الوحدة بالأساس (ر.ع.)
   const qty = Number(product.quantity || 0);
-  const isShayla =
-    product.category === "الشيلات فرنسية" ||
-    product.category === "الشيلات سادة";
-  const pairs = isShayla ? Math.floor(qty / 2) : 0;
-  const pairDiscount = pairs * 1; // 1 ر.ع لكل زوج
   const subtotal = unit * qty;
-  return Math.max(0, subtotal - pairDiscount);
+  return Math.max(0, subtotal);
 };
 
 // مجاميع عامة
@@ -162,16 +157,13 @@ const cartSlice = createSlice({
       saveState(state);
     },
 
-    // تغيير الدولة (يضبط الشحن)
-    // "عمان" => 2 ر.ع | "الإمارات" => 4 ر.ع | "دول الخليج" => 5 ر.ع
+    // تغيير الدولة (قيمة shippingFee عامة فقط — الحساب التفصيلي يتم في Checkout)
     setCountry: (state, action) => {
       state.country = action.payload;
-      if (action.payload === "الإمارات") {
-        state.shippingFee = 4;
-      } else if (action.payload === "دول الخليج") {
-        state.shippingFee = 5;
+      if (action.payload === "دول الخليج") {
+        state.shippingFee = 7; // قيمة افتراضية عامة، الحساب الدقيق في Checkout
       } else {
-        state.shippingFee = 2; // عمان
+        state.shippingFee = 2; // عُمان
       }
       saveState(state);
     },

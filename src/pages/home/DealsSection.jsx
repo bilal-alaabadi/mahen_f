@@ -1,21 +1,72 @@
 import React from 'react';
-import dealsImg from "../../assets/web-pic1-600x857 (1).png";
+import { motion, useAnimation } from 'framer-motion';
+import img1 from "../../assets/00-3.png";
+import img2 from "../../assets/00-4.png";
+
+const slide = (direction) => ({
+  hidden: { opacity: 0, x: direction === "right" ? 64 : -64 },
+  show: {
+    opacity: 1,
+    x: 0,
+    transition: { type: "spring", stiffness: 120, damping: 18, mass: 0.45 },
+  },
+});
 
 const DealsSection = () => {
+  // تحكّم مستقل لكل صورة
+  const controls1 = useAnimation();
+  const controls2 = useAnimation();
+
   return (
-    <section className='section__container deals__container bg-blue-50 flex flex-col md:flex-row items-center gap-8 p-8'>
-        {/* الصورة ستختفي في الشاشات الصغيرة وتظهر في الشاشات المتوسطة وما فوق */}
-        <div className='deals__image hidden md:block flex-1'>
-            <img src={dealsImg} alt="عروض الشهر" className='w-full h-auto' />
+    <section className="px-2 sm:px-4 py-8">
+      <div className="mx-auto w-full max-w-screen-2xl space-y-6 md:space-y-10">
+
+        {/* 1) الأول: من اليمين إلى اليسار */}
+        <div className="flex justify-end overflow-hidden">
+          <motion.img
+            src={img1}
+            alt="عرض 1"
+            initial="hidden"
+            animate={controls1}
+            variants={slide("right")}
+            // مهم: لا نضع once:true
+            viewport={{ amount: 0.5 }} 
+            onViewportEnter={() => controls1.start("show")}
+            onViewportLeave={() => controls1.start("hidden")}
+            className="select-none transform-gpu"
+            style={{
+              width: "80%",
+              maxWidth: "1600px",
+              height: "auto",
+              display: "block",
+            }}
+            draggable={false}
+          />
         </div>
 
-        <div className='deals__content flex-1 text-center md:text-right' dir='rtl'>
-            <h5 className='text-2xl font-bold text-gray-800'>احصل على خصم يصل إلى %20</h5>
-            <h4 className='text-xl font-semibold text-primary mt-2'>عروض هذا الشهر</h4>
-            <p className='text-gray-600 mt-4'>
-                عروض موضة الرجال العمانيين لهذا الشهر هنا لتحقيق أحلام أناقتك دون تكلفة باهظة. اكتشف مجموعة مختارة من الملابس التقليدية والعصرية، والإكسسوارات والأحذية، كلها مختارة بعناية لتعزيز خزانة ملابسك.
-            </p>
+        {/* 2) الثاني: من اليسار إلى اليمين */}
+        <div className="flex justify-start overflow-hidden">
+          <motion.img
+            src={img2}
+            alt="عرض 2"
+            initial="hidden"
+            animate={controls2}
+            variants={slide("left")}
+            viewport={{ amount: 0.5 }} 
+            onViewportEnter={() => controls2.start("show")}
+            onViewportLeave={() => controls2.start("hidden")}
+            className="select-none transform-gpu"
+            style={{
+              width: "80%",
+              maxWidth: "1600px",
+              height: "auto",
+              display: "block",
+            }}
+            draggable={false}
+          />
         </div>
+
+      </div>
     </section>
   );
 };

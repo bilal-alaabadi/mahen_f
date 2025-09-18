@@ -29,7 +29,7 @@ const ReviewsCard = ({ productReviews }) => {
   }
 
   return (
-    <div className='my-6 bg-gradient-to-r from-[#f8edf1] to-[#ffffff] bg-white p-8'>
+    <div className='my-6 bg-gradient-to-r  bg-white p-8'>
       <div>
         {
           reviews.length > 0 ? (
@@ -65,7 +65,7 @@ const ReviewsCard = ({ productReviews }) => {
       <div className='mt-12'>
         <button
           onClick={handleOpenReviewModal}
-          className='px-6 py-3 bg-[#CB908B] text-white rounded-md'>
+          className='px-6 py-3 bg-[#64472b] text-white rounded-md'>
           أضِف تعليق
         </button>
       </div>

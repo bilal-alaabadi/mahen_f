@@ -194,8 +194,8 @@ const PaymentSuccess = () => {
                     (product.giftCard.to && String(product.giftCard.to).trim()) ||
                     (product.giftCard.phone && String(product.giftCard.phone).trim()) ||
                     (product.giftCard.note && String(product.giftCard.note).trim())) && (
-                    <div className="mt-3 p-3 rounded-md bg-pink-50 border border-pink-200 text-pink-900 text-sm">
-                      <div className="font-semibold mb-1">بطاقة هدية</div>
+                    <div className="mt-3 p-3 rounded-md border border-gray-200 bg-white text-gray-700 text-sm">
+                      <div className="font-semibold mb-1 text-[#64472b]">بطاقة هدية</div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
                         {product.giftCard.from && String(product.giftCard.from).trim() && (
                           <div><span className="font-medium">من: </span>{product.giftCard.from}</div>

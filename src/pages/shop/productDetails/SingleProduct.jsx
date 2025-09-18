@@ -6,34 +6,38 @@ import { useFetchProductByIdQuery } from '../../../redux/features/products/produ
 import { addToCart, clearGiftCard } from '../../../redux/features/cart/cartSlice';
 import ReviewsCard from '../reviews/ReviewsCard';
 import Card from './Card';
+import imge from "../../../assets/00-2.png";
+import logo from "../../../assets/لوقو-02.png"; // 👈 الشعار لسكريم اللودينغ
 
 const SingleProduct = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const { data, error, isLoading } = useFetchProductByIdQuery(id);
-  const { country, giftCard } = useSelector((state) => state.cart); // <-- نقرأ giftCard أيضًا
+  const { country, giftCard } = useSelector((state) => state.cart);
   const singleProduct = data;
   const productReviews = data?.reviews || [];
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [imageScale, setImageScale] = useState(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
-
   const [cartQty, setCartQty] = useState(1);
 
-  const [measurements, setMeasurements] = useState({
+  // ✅ قياسات ابتدائية
+  const initialMeasurements = {
     length: '',
     sleeveLength: '',
     width: '',
     design: '',
     color: '',
     buttons: '',
-    quantity: '',
+    chestFrontWidth: '',
+    sleeveFromShoulder: '',
+    shoulderWidth: '',
     notes: '',
-    colorOption: ''
-  });
+  };
+  const [measurements, setMeasurements] = useState(initialMeasurements);
 
-  // مفتاح لإعادة تركيب بطاقة الهدية بعد الإضافة (يمسح أي حالة داخلية)
+  // مفتاح لإعادة تركيب بطاقة الهدية بعد الإضافة
   const [giftResetKey, setGiftResetKey] = useState(0);
 
   const isAEDCountry = country === 'الإمارات' || country === 'دول الخليج';
@@ -46,51 +50,49 @@ const SingleProduct = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  // 🚫 منع التمرير أثناء التحميل بالشعار
   useEffect(() => {
-    if (!singleProduct) return;
-    if (singleProduct.category === 'الشيلات فرنسية' || singleProduct.category === 'الشيلات سادة') {
-      setMeasurements((prev) => ({ ...prev, quantity: String(cartQty) }));
+    if (isLoading) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
     }
-  }, [cartQty, singleProduct]);
+    return () => { document.body.style.overflow = ''; };
+  }, [isLoading]);
 
   const handleAddToCart = (product) => {
     if (product.category === 'تفصيل العبايات') {
-      if (!measurements.length || !measurements.sleeveLength ||
-          !measurements.width || !measurements.color ||
-          !measurements.design || !measurements.buttons) {
+      if (
+        !measurements.length ||
+        !measurements.sleeveLength ||
+        !measurements.width ||
+        !measurements.color ||
+        !measurements.design ||
+        !measurements.buttons
+      ) {
         alert('الرجاء إدخال جميع القياسات المطلوبة');
-        return;
-      }
-    } else if (product.category === 'الشيلات فرنسية' || product.category === 'الشيلات سادة') {
-      if (!measurements.quantity || !measurements.colorOption) {
-        alert('الرجاء إدخال الكمية وتحديد اللون');
-        return;
-      }
-      if (Number(measurements.quantity) !== cartQty) {
-        alert('تمت مزامنة كمية الشراء مع عداد الكمية');
-        setMeasurements((prev) => ({ ...prev, quantity: String(cartQty) }));
-      }
-    } else if (product.category === 'دريسات') {
-      if (!measurements.color || !measurements.length) {
-        alert('الرجاء إدخال رقم اللون والطول');
         return;
       }
     }
 
-    const isShayla =
-      product.category === 'الشيلات فرنسية' || product.category === 'الشيلات سادة';
-    const unitBasePrice = product.regularPrice || product.price || 0;
+    if (product.category === 'ملابس مناسبات') {
+      if (
+        !measurements.length ||
+        !measurements.chestFrontWidth ||
+        !measurements.sleeveFromShoulder ||
+        !measurements.shoulderWidth
+      ) {
+        alert('الرجاء إدخال الطول، عرض الصدر من الأمام، طول الأكمام من الكتف، وعرض الكتف — بالإنش.');
+        return;
+      }
+    }
+
+    const unitBasePrice = Number(product.regularPrice ?? product.price ?? 0);
     const unitDisplayPrice = unitBasePrice * exchangeRate;
-    const subtotal = unitDisplayPrice * cartQty;
-
-    const pairsCount = isShayla ? Math.floor(cartQty / 2) : 0;
-    const pairDiscount = pairsCount * (1 * exchangeRate);
-
-    const lineTotal = Math.max(0, subtotal - pairDiscount);
+    const lineTotal = unitDisplayPrice * cartQty;
 
     setIsAddingToCart(true);
 
-    // <-- نرفق بطاقة الهدية مع عنصر السلة إن كانت تحتوي بيانات
     const giftCardForLine =
       giftCard && (giftCard.from || giftCard.to || giftCard.phone || giftCard.note)
         ? { ...giftCard }
@@ -101,24 +103,22 @@ const SingleProduct = () => {
       price: unitBasePrice,
       measurements: measurements,
       quantity: cartQty,
-      appliedDiscount: pairDiscount,
       lineTotal,
       currency,
       exchangeRate,
-      giftCard: giftCardForLine, // <-- هنا الإضافة المطلوبة
-      promoTag: isShayla && pairsCount > 0 ? `خصم ريال لكل زوج ( ${pairsCount} زوج )` : null,
+      giftCard: giftCardForLine,
     };
 
-    // إضافة للسلة
     dispatch(addToCart(productToAdd));
 
-    // تفريغ بطاقة الهدية من الـ Redux + إعادة تركيب المكوّن لمسح أي ستايت داخلي
+    // ✅ تصفير
+    setMeasurements(initialMeasurements);
+    setCartQty(1);
+    setCurrentImageIndex(0);
     dispatch(clearGiftCard());
     setGiftResetKey((k) => k + 1);
 
-    setTimeout(() => {
-      setIsAddingToCart(false);
-    }, 700);
+    setTimeout(() => setIsAddingToCart(false), 700);
   };
 
   const nextImage = () => {
@@ -135,32 +135,62 @@ const SingleProduct = () => {
 
   const handleMeasurementChange = (e) => {
     const { name, value } = e.target;
-    setMeasurements((prev) => {
-      const updated = { ...prev, [name]: value };
-      if (name === 'quantity') {
-        const q = parseInt(value || '1', 10);
-        setCartQty(isNaN(q) || q < 1 ? 1 : q);
-      }
-      return updated;
-    });
+    setMeasurements((prev) => ({ ...prev, [name]: value }));
   };
 
   const increaseQty = () => setCartQty((q) => q + 1);
   const decreaseQty = () => setCartQty((q) => (q > 1 ? q - 1 : 1));
 
-  if (isLoading) return <p>جاري التحميل...</p>;
+  // 🔄 شاشة تحميل بالشعار الكبير
+  if (isLoading) {
+    return (
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-white">
+        <div className="logo-wrapper">
+          <img
+            src={logo}
+            alt="شعار المتجر"
+            className="h-[340px] md:h-[500px] w-auto select-none"
+            draggable="false"
+          />
+        </div>
+
+        <style>{`
+          .logo-wrapper {
+            position: relative;
+            display: inline-block;
+            overflow: hidden;
+            filter: drop-shadow(0 12px 32px rgba(0,0,0,0.12));
+          }
+          .logo-wrapper::before {
+            content: '';
+            position: absolute;
+            top: -160%;
+            left: 0;
+            width: 100%;
+            height: 320%;
+            background: linear-gradient(
+              to bottom,
+              rgba(255,255,255,0) 0%,
+              rgba(255,255,255,0.55) 50%,
+              rgba(255,255,255,0) 100%
+            );
+            animation: shineMove 2.6s linear infinite;
+            pointer-events: none;
+          }
+          @keyframes shineMove {
+            0%   { top: -160%; }
+            100% { top: 160%;  }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
   if (error) return <p>حدث خطأ أثناء تحميل تفاصيل المنتج.</p>;
   if (!singleProduct) return null;
 
-  const currentBasePrice = singleProduct.regularPrice || singleProduct.price || 0;
+  const currentBasePrice = Number(singleProduct.regularPrice ?? singleProduct.price ?? 0);
   const unitPrice = currentBasePrice * exchangeRate;
-  const isShayla =
-    singleProduct.category === 'الشيلات فرنسية' || singleProduct.category === 'الشيلات سادة';
-
-  const subtotal = unitPrice * cartQty;
-  const pairsCount = isShayla ? Math.floor(cartQty / 2) : 0;
-  const pairDiscount = pairsCount * (1 * exchangeRate);
-  const totalAfterDiscount = Math.max(0, subtotal - pairDiscount);
 
   const oldPrice = singleProduct.oldPrice ? singleProduct.oldPrice * exchangeRate : null;
   const hasRealDiscount = oldPrice && singleProduct.oldPrice > currentBasePrice;
@@ -168,14 +198,25 @@ const SingleProduct = () => {
     ? Math.round(((oldPrice - unitPrice) / oldPrice) * 100)
     : 0;
 
+  const brandColor = '#64472b';
+
   return (
     <>
-      <section className='section__container bg-gradient-to-r from-[#f8edf1] to-[#ffffff]  mt-8 ' dir='rtl'>
+      <section className="flex justify-center">
+        <img
+          src={imge}
+          alt="متجر حناء برغند"
+          className="h-[21vh] object-cover md:h-[80vh] lg:h-[35vh]
+                     w-full md:w-4/5 lg:w-screen"
+        />
+      </section>
+
+      <section className='section__container bg-gradient-to-r mt-8' dir='rtl'>
         <div className='flex flex-col items-center md:flex-row gap-8'>
           {/* الصور */}
           <div className='md:w-1/2 w-full relative'>
             {hasRealDiscount && (
-              <div className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full z-10">
+              <div className="absolute top-3 left-3 bg-[#64472b] text-white text-xs font-bold px-2 py-1 rounded-full z-10">
                 خصم {discountPercentage}%
               </div>
             )}
@@ -199,14 +240,14 @@ const SingleProduct = () => {
                   <>
                     <button
                       onClick={prevImage}
-                      className='absolute left-0 top-1/2 transform -translate-y-1/2 bg-[#CB908B] text-white p-2 rounded-full hover:opacity-90'
+                      className='absolute left-0 top-1/2 -translate-y-1/2 bg-white text-[color:#64472b] border border-[color:#64472b] p-2 rounded-full hover:bg-gray-50 shadow'
                       aria-label="الصورة السابقة"
                     >
                       <i className="ri-arrow-left-s-line"></i>
                     </button>
                     <button
                       onClick={nextImage}
-                      className='absolute right-0 top-1/2 transform -translate-y-1/2 bg-[#CB908B] text-white p-2 rounded-full hover:opacity-90'
+                      className='absolute right-0 top-1/2 -translate-y-1/2 bg-white text-[color:#64472b] border border-[color:#64472b] p-2 rounded-full hover:bg-gray-50 shadow'
                       aria-label="الصورة التالية"
                     >
                       <i className="ri-arrow-right-s-line"></i>
@@ -221,7 +262,9 @@ const SingleProduct = () => {
                         key={idx}
                         type="button"
                         onClick={() => setCurrentImageIndex(idx)}
-                        className={`relative rounded-md overflow-hidden border ${currentImageIndex === idx ? 'border-[#CB908B]' : 'border-gray-200'} hover:border-[#CB908B]`}
+                        className={`relative rounded-md overflow-hidden border ${
+                          currentImageIndex === idx ? 'border-[color:#64472b]' : 'border-gray-200'
+                        } hover:border-[color:#64472b]`}
                         aria-label={`صورة رقم ${idx + 1}`}
                       >
                         <img
@@ -245,73 +288,36 @@ const SingleProduct = () => {
 
           {/* التفاصيل */}
           <div className='md:w-1/2 w-full'>
-            <h3 className='text-2xl font-semibold mb-4'>{singleProduct.name}</h3>
+            <h3 className='text-2xl font-semibold mb-8 text-center'>{singleProduct.name}</h3>
 
-            {singleProduct.category === 'دريسات' && (
-              <div className="mb-4">
-                <div className="relative overflow-hidden rounded-lg border border-rose-200 bg-gradient-to-l from-pink-100 to-rose-50 p-3 text-center text-rose-700 font-semibold">
-                  <span className="inline-flex items-center gap-2">
-                    <i className="ri-heart-2-line text-xl"></i>
-                    العرض يناسب جميع المقاسات
-                  </span>
-                  <span className="pointer-events-none absolute -right-6 -top-6 h-16 w-16 rounded-full bg-rose-200 opacity-40"></span>
-                  <span className="pointer-events-none absolute -left-6 -bottom-6 h-16 w-16 rounded-full bg-rose-200 opacity-40"></span>
-                </div>
-              </div>
-            )}
-
-            <div className='mb-4'>
-              <div className='text-xl text-[#CB908B] space-x-1 flex items-center gap-3'>
+            <div className='mb-8'>
+              <div
+                className='text-xl flex flex-col items-center gap-3 text-center'
+                style={{ color: brandColor }}
+              >
                 <span>سعر الوحدة: {unitPrice.toFixed(2)} {currency}</span>
                 {hasRealDiscount && oldPrice && (
-                  <s className="text-[#9B2D1F] text-sm">{oldPrice.toFixed(2)} {currency}</s>
-                )}
-              </div>
-
-              <div className="mt-3 rounded-md p-3 text-sm">
-                {pairDiscount > 0 && (
-                  <>
-                    <div className="flex justify-between">
-                      <span>الإجمالي الفرعي</span>
-                      <span>{subtotal.toFixed(2)} {currency}</span>
-                    </div>
-
-                    <div className="flex justify-between text-gray-600 mt-1">
-                      <span>
-                        عرض الشيلات: خصم ريال لكل زوج (مُفعّل - {pairsCount} زوج)
-                      </span>
-                      <span>- {pairDiscount.toFixed(2)} {currency}</span>
-                    </div>
-
-                    <div className="flex justify-between font-semibold mt-2 border-t pt-2">
-                      <span>الإجمالي</span>
-                      <span>{totalAfterDiscount.toFixed(2)} {currency}</span>
-                    </div>
-                  </>
+                  <s className="text-[#9B2D1F] text-sm">
+                    {oldPrice.toFixed(2)} {currency}
+                  </s>
                 )}
               </div>
             </div>
 
-            <div className='flex flex-col space-y-2'>
-              <p className="text-gray-500 mb-4 text-lg font-medium leading-relaxed">
-                <span className="text-gray-800 font-bold block">الفئة:</span>
-                <span className="text-gray-600">{singleProduct.category}</span>
-              </p>
-            </div>
-            <p className="text-gray-500 mb-4 text-lg font-medium leading-relaxed">
-              <span className="text-gray-800 font-bold block">الوصف:</span>
-              <span className="text-gray-600">{singleProduct.description}</span>
+            <p className="text-gray-500 mb-8 text-lg font-medium leading-relaxed text-center space-y-3">
+              <span className="text-gray-800 font-bold block mb-3">الوصف:</span>
+              <span className="text-gray-600 block">{singleProduct.description}</span>
             </p>
 
             {/* عداد الكمية */}
             <div className="mb-6 flex flex-col items-center text-center">
               <label className="block text-gray-700 mb-3 font-bold text-lg">الكمية</label>
 
-              <div className="inline-flex items-center gap-4 bg-gray-100 rounded-lg p-3 shadow-sm">
+              <div className="inline-flex items-center gap-4 bg-gray-10 rounded-lg p-3 shadow-sm">
                 <button
                   type="button"
                   onClick={decreaseQty}
-                  className="w-12 h-12 flex items-center justify-center rounded-md bg-[#CB908B] text-white text-xl font-bold hover:opacity-90"
+                  className="w-12 h-12 flex items-center justify-center rounded-md bg-white text-[color:#64472b] border border-[color:#64472b] text-xl font-bold hover:bg-gray-50"
                   aria-label="تقليل الكمية"
                 >
                   -
@@ -322,25 +328,21 @@ const SingleProduct = () => {
                 <button
                   type="button"
                   onClick={increaseQty}
-                  className="w-12 h-12 flex items-center justify-center rounded-md bg-[#CB908B] text-white text-xl font-bold hover:opacity-90"
+                  className="w-12 h-12 flex items-center justify-center rounded-md bg-white text-[color:#64472b] border border-[color:#64472b] text-xl font-bold hover:bg-gray-50"
                   aria-label="زيادة الكمية"
                 >
                   +
                 </button>
               </div>
-
-              {(singleProduct.category === 'الشيلات فرنسية' || singleProduct.category === 'الشيلات سادة') && (
-                <p className="text-sm text-gray-500 mt-2">* سيتم مزامنة هذه الكمية مع حقل كمية الشيلات.</p>
-              )}
             </div>
 
             {singleProduct.category === 'تفصيل العبايات' && (
               <div className="mb-6 text-center">
-                <div className=" p-4 rounded-md">
-                  <h4 className="text-lg font-semibold mb-4 text-[#CB908B]">تفاصيل القياسات المطلوبة</h4>
+                <div className="p-4 rounded-md">
+                  <h4 className="text-lg font-semibold mb-4" style={{ color: brandColor }}>تفاصيل القياسات المطلوبة</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-gray-700 mb-1">الطول ( إنش)</label>
+                      <label className="block text-gray-700 mb-1">الطول (إنش)</label>
                       <input
                         type="number"
                         name="length"
@@ -352,7 +354,7 @@ const SingleProduct = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-gray-700 mb-1">طول الكم من نصف الرقبة ( إنش)</label>
+                      <label className="block text-gray-700 mb-1">طول الكم من نصف الرقبة (إنش)</label>
                       <input
                         type="number"
                         name="sleeveLength"
@@ -364,7 +366,7 @@ const SingleProduct = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-gray-700 mb-1">العرض ( إنش)</label>
+                      <label className="block text-gray-700 mb-1">العرض (إنش)</label>
                       <input
                         type="number"
                         name="width"
@@ -419,81 +421,67 @@ const SingleProduct = () => {
                       </select>
                     </div>
                   </div>
-                  <div className='pt-2'>ملاحظة : وقت الطلب يستغرق 5-25 يومًا.</div>
+                  <div className='pt-2 text-sm text-gray-600'>ملاحظة : وقت الطلب يستغرق 5-25 يومًا.</div>
                 </div>
               </div>
             )}
 
-            {(singleProduct.category === 'الشيلات فرنسية' || singleProduct.category === 'الشيلات سادة') && (
-              <div className="mb-6">
-                <div className=" p-4 rounded-md">
-                  <h4 className="text-lg font-semibold mb-4 text-[#CB908B]">خيارات الشيلات</h4>
+            {singleProduct.category === 'ملابس مناسبات' && (
+              <div className="mb-6 text-center">
+                <div className="p-4 rounded-md">
+                  <h4 className="text-lg font-semibold mb-4" style={{ color: brandColor }}>قياسات ملابس المناسبات (بالإنش)</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-gray-700 mb-1">الكمية</label>
+                      <label className="block text-gray-700 mb-1">الطول (إنش)</label>
                       <input
                         type="number"
-                        name="quantity"
-                        value={measurements.quantity}
-                        onChange={handleMeasurementChange}
-                        className="w-full p-2 border border-gray-300 rounded"
-                        placeholder="أدخل الكمية المطلوبة"
-                        required
-                        min={1}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-gray-700 mb-1">اختر اللون</label>
-                      <select
-                        name="colorOption"
-                        value={measurements.colorOption}
-                        onChange={handleMeasurementChange}
-                        className="w-full p-2 border border-gray-300 rounded"
-                        required
-                      >
-                        <option value="">اختر اللون</option>
-                        <option value="أسود">أسود</option>
-                        <option value="أبيض">أبيض</option>
-                      </select>
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2">* يتم ربط هذه الكمية بعدّاد الكمية بالأعلى.</p>
-                </div>
-              </div>
-            )}
-
-            {singleProduct.category === 'دريسات' && (
-              <div className="mb-6">
-                <div className=" p-4 rounded-md">
-                  <h4 className="text-lg font-semibold mb-4 text-[#CB908B]">خيارات الدرسات</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-gray-700 mb-1">رقم اللون</label>
-                      <input
-                        type="text"
-                        name="color"
-                        value={measurements.color}
-                        onChange={handleMeasurementChange}
-                        className="w-full p-2 border border-gray-300 rounded"
-                        placeholder="أدخل رقم اللون"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-gray-700 mb-1">الطول</label>
-                      <input
-                        type="text"
                         name="length"
                         value={measurements.length}
                         onChange={handleMeasurementChange}
                         className="w-full p-2 border border-gray-300 rounded"
-                        placeholder="أدخل الطول المطلوب"
+                        placeholder="أدخل الطول بالإنش"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 mb-1">عرض الصدر من الأمام (إنش)</label>
+                      <input
+                        type="number"
+                        name="chestFrontWidth"
+                        value={measurements.chestFrontWidth}
+                        onChange={handleMeasurementChange}
+                        className="w-full p-2 border border-gray-300 rounded"
+                        placeholder="أدخل عرض الصدر من الأمام بالإنش"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 mb-1">طول الأكمام من الكتف (إنش)</label>
+                      <input
+                        type="number"
+                        name="sleeveFromShoulder"
+                        value={measurements.sleeveFromShoulder}
+                        onChange={handleMeasurementChange}
+                        className="w-full p-2 border border-gray-300 rounded"
+                        placeholder="أدخل طول الأكمام من الكتف بالإنش"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 mb-1">عرض الكتف (إنش)</label>
+                      <input
+                        type="number"
+                        name="shoulderWidth"
+                        value={measurements.shoulderWidth}
+                        onChange={handleMeasurementChange}
+                        className="w-full p-2 border border-gray-300 rounded"
+                        placeholder="أدخل عرض الكتف بالإنش"
                         required
                       />
                     </div>
                   </div>
                   <div className="mt-4">
-                    <label className="block text-gray-700 mb-1">ملاحظات إضافية (اختياري)</label>
+                    <label className="block text-gray-700 mb-1">ملاحظات (اختياري)</label>
                     <textarea
                       name="notes"
                       value={measurements.notes}
@@ -503,6 +491,7 @@ const SingleProduct = () => {
                       rows="3"
                     />
                   </div>
+                  <div className='pt-2 text-sm text-gray-600'>ملاحظة : وقت الطلب يستغرق 5-25 يومًا.</div>
                 </div>
               </div>
             )}
@@ -517,24 +506,61 @@ const SingleProduct = () => {
                 e.stopPropagation();
                 handleAddToCart(singleProduct);
               }}
-              className={`mt-6 px-6 py-3 bg-[#CB908B] text-white rounded-md hover:opacity-90 transition-all duration-200 relative overflow-hidden ${
-                isAddingToCart ? 'bg-green-600' : ''
-              }`}
+              className={`mt-6 px-6 py-3 rounded-md transition-all duration-200 relative overflow-hidden
+                bg-[#64472b] text-white border border-[#64472b] hover:bg-[#503823]
+                ${isAddingToCart ? 'bg-green-500 text-white border-green-500' : ''}
+              `}
               disabled={
                 (singleProduct.category === 'تفصيل العبايات' &&
-                  (!measurements.length || !measurements.sleeveLength ||
-                    !measurements.width || !measurements.color ||
-                    !measurements.design || !measurements.buttons)) ||
-                ((singleProduct.category === 'الشيلات فرنسية' || singleProduct.category === 'الشيلات سادة') &&
-                  (!measurements.quantity || !measurements.colorOption)) ||
-                (singleProduct.category === 'دريسات' &&
-                  (!measurements.color || !measurements.length))
+                  (!measurements.length ||
+                    !measurements.sleeveLength ||
+                    !measurements.width ||
+                    !measurements.color ||
+                    !measurements.design ||
+                    !measurements.buttons)) ||
+                (singleProduct.category === 'ملابس مناسبات' &&
+                  (!measurements.length ||
+                    !measurements.chestFrontWidth ||
+                    !measurements.sleeveFromShoulder ||
+                    !measurements.shoulderWidth))
               }
+              style={{
+                opacity:
+                  (singleProduct.category === 'تفصيل العبايات' &&
+                    (!measurements.length ||
+                      !measurements.sleeveLength ||
+                      !measurements.width ||
+                      !measurements.color ||
+                      !measurements.design ||
+                      !measurements.buttons)) ||
+                  (singleProduct.category === 'ملابس مناسبات' &&
+                    (!measurements.length ||
+                      !measurements.chestFrontWidth ||
+                      !measurements.sleeveFromShoulder ||
+                      !measurements.shoulderWidth))
+                    ? 0.6
+                    : 1,
+                cursor:
+                  (singleProduct.category === 'تفصيل العبايات' &&
+                    (!measurements.length ||
+                      !measurements.sleeveLength ||
+                      !measurements.width ||
+                      !measurements.color ||
+                      !measurements.design ||
+                      !measurements.buttons)) ||
+                  (singleProduct.category === 'ملابس مناسبات' &&
+                    (!measurements.length ||
+                      !measurements.chestFrontWidth ||
+                      !measurements.sleeveFromShoulder ||
+                      !measurements.shoulderWidth))
+                    ? 'not-allowed'
+                    : 'pointer',
+              }}
             >
               {isAddingToCart ? (
                 <>
                   <span className="animate-bounce">تمت الإضافة!</span>
-                  <span className="absolute inset-0 bg-green-600 opacity-0 animate-fade"></span>
+                  <span className="absolute inset-0 bg-green-500 opacity-0 animate-fade"></span>
                 </>
               ) : (
                 'إضافة إلى السلة'
@@ -544,7 +570,7 @@ const SingleProduct = () => {
         </div>
       </section>
 
-      <section className='section__container bg-gradient-to-r from-[#f8edf1] to-[#ffffff] mt-8' dir='rtl'>
+      <section className='section__container bg-gradient-to-r mt-8' dir='rtl'>
         <ReviewsCard productReviews={productReviews} />
       </section>
     </>

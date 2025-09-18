@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import timings from "../../assets/متجر-عبايات04.png";
+import timings from "../../assets/بنر.jpg";
 
 const Banner = () => {
     return (

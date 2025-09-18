@@ -11,10 +11,7 @@ import UploadImage from '../manageProduct/UploadImag';
 const categories = [
   { label: 'أختر منتج', value: '' },
   { label: 'تفصيل العبايات', value: 'تفصيل العبايات' },
-  { label: 'الشيلات فرنسية', value: 'الشيلات فرنسية' },
-  { label: 'الشيلات سادة', value: 'الشيلات سادة' },
-  { label: 'العطور', value: 'العطور' },
-  { label: 'دريسات', value: 'دريسات' },
+  { label: 'ملابس مناسبات', value: 'ملابس مناسبات' },
 ];
 
 const sizes = [

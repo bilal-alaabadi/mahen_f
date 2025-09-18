@@ -17,7 +17,6 @@ const PostAReview = ({ isModalOpen, handleClose }) => {
   const location = useLocation();
 
   useEffect(() => {
-    // في حال فُتح المودال بطريقة ما بدون وجود مستخدم، نعيد التوجيه للتسجيل
     if (isModalOpen && !user) {
       handleClose?.();
       navigate('/register', { state: { from: location.pathname } });
@@ -32,7 +31,6 @@ const PostAReview = ({ isModalOpen, handleClose }) => {
     e.preventDefault();
 
     if (!user) {
-      // حماية إضافية
       handleClose?.();
       navigate('/register', { state: { from: location.pathname } });
       return;
@@ -58,17 +56,17 @@ const PostAReview = ({ isModalOpen, handleClose }) => {
   }
 
   return (
-    <div className={`fixed inset-0 bg-black/90 flex items-center bg-gradient-to-r from-[#f8edf1] to-[#ffffff] justify-center z-40 px-2 ${isModalOpen ? 'block' : 'hidden'}`}>
-      <div className='bg-white p-6 rounded-md shadow-lg w-96 z-50'>
-        <h2 className='text-lg font-medium mb-4'>انشر التعليق</h2>
+    <div className={`fixed inset-0 bg-black/40 flex items-center justify-center z-40 px-2 ${isModalOpen ? 'block' : 'hidden'}`}>
+      <div className='bg-white p-6 rounded-lg shadow-lg w-96 z-50'>
+        <h2 className='text-lg font-semibold mb-4 text-[#64472b]'>انشر التعليق</h2>
 
-        <div className='flex items-center mb-4'>
+        <div className='flex items-center mb-4 justify-center'>
           {
             [1, 2, 3, 4, 5].map((star, index) => (
               <span
                 key={index}
                 onClick={() => handleRating(star)}
-                className='cursor-pointer text-yellow-500 text-xl'
+                className='cursor-pointer text-yellow-500 text-2xl'
               >
                 {rating >= star ? (<i className="ri-star-fill"></i>) : (<i className="ri-star-line"></i>)}
               </span>
@@ -80,16 +78,23 @@ const PostAReview = ({ isModalOpen, handleClose }) => {
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           rows="4"
-          className='w-full border border-gray-300 p-2 rounded-md mb-4 focus:outline-none'
+          className='w-full border border-gray-300 p-2 rounded-md mb-4 focus:outline-none focus:ring-2 focus:ring-[#64472b]/50'
+          placeholder="اكتب تعليقك هنا..."
         ></textarea>
 
         <div className='flex justify-end gap-2'>
           <button
             onClick={handleClose}
-            className='px-4 py-2 bg-gray-300 rounded-md'>إلغاء</button>
+            className='px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition'
+          >
+            إلغاء
+          </button>
           <button
             onClick={handleSubmit}
-            className='px-4 py-2 bg-primary text-white rounded-md'>إرسال</button>
+            className='px-4 py-2 bg-[#64472b] text-white rounded-md hover:bg-[#503823] transition'
+          >
+            إرسال
+          </button>
         </div>
       </div>
     </div>

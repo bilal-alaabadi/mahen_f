@@ -83,20 +83,20 @@ const CartModal = ({ products, isOpen, onClose }) => {
                       </div>
 
                       {/* بطاقة الهدية لكل عنصر إن وُجدت */}
-                      {hasGiftInfo(product.giftCard) && (
-                        <div className="mt-2 p-2 rounded-md bg-pink-50 border border-pink-200 text-[12px] text-pink-900 space-y-0.5">
-                          <div className="font-semibold text-pink-700">بطاقة هدية</div>
-                          {product.giftCard.from?.trim() && <div>من: {product.giftCard.from}</div>}
-                          {product.giftCard.to?.trim() && <div>إلى: {product.giftCard.to}</div>}
-                          {product.giftCard.phone?.trim() && <div>رقم المستلم: {product.giftCard.phone}</div>}
-                          {product.giftCard.note?.trim() && <div>ملاحظات: {product.giftCard.note}</div>}
-                        </div>
-                      )}
+{hasGiftInfo(product.giftCard) && (
+  <div className="mt-2 p-2 rounded-md border border-gray-200 bg-white text-[12px] text-gray-700 space-y-0.5">
+    <div className="font-semibold text-[#64472b]">بطاقة هدية</div>
+    {product.giftCard.from?.trim() && <div>من: {product.giftCard.from}</div>}
+    {product.giftCard.to?.trim() && <div>إلى: {product.giftCard.to}</div>}
+    {product.giftCard.phone?.trim() && <div>رقم المستلم: {product.giftCard.phone}</div>}
+    {product.giftCard.note?.trim() && <div>ملاحظات: {product.giftCard.note}</div>}
+  </div>
+)}
+
 
                       {/* التحكم بالكمية + إزالة */}
                       <div className="mt-3 flex items-center gap-3">
                         <button
-                          // ✅ إصلاح: أرسل الـ id فقط ليتوافق مع الـ reducer الموجود
                           onClick={() => dispatch(removeFromCart(product._id))}
                           className="text-sm text-red-600 hover:text-red-700 underline underline-offset-2"
                         >

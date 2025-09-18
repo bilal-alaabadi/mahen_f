@@ -53,38 +53,57 @@ const ManageOrders = () => {
     return (isNaN(n) ? 0 : n).toFixed(2);
   };
 
-  // ===== قياسات/خيارات المنتج =====
+  // ===== قياسات/خيارات المنتج — فقرات عربية =====
   const renderMeasurements = (m) => {
     if (!m || typeof m !== 'object') return null;
-    const entries = Object.entries(m).filter(([_, v]) => v !== '' && v !== null && v !== undefined);
-    if (entries.length === 0) return null;
+
+    const rows = [];
+    // تفصيل العبايات
+    if (m.length) rows.push(['الطول', m.length]);
+    if (m.sleeveLength) rows.push(['طول الكم', m.sleeveLength]);
+    if (m.width) rows.push(['العرض', m.width]);
+    if (m.color) rows.push(['اللون', m.color]);
+    if (m.design) rows.push(['القصة', m.design]);
+    if (m.buttons) rows.push(['الأزرار', m.buttons]);
+    // ملابس مناسبات
+    if (m.chestFrontWidth) rows.push(['عرض الصدر من الأمام', m.chestFrontWidth]);
+    if (m.sleeveFromShoulder) rows.push(['طول الأكمام من الكتف', m.sleeveFromShoulder]);
+    if (m.shoulderWidth) rows.push(['عرض الكتف', m.shoulderWidth]);
+    // عامة
+    if (m.notes) rows.push(['ملاحظات', m.notes]);
+
+    if (rows.length === 0) return null;
+
     return (
       <div className="mt-2 bg-gray-50 rounded p-2 text-xs text-gray-700">
         <p className="font-semibold mb-1">القياسات / الخيارات:</p>
-        <ul className="list-disc pr-5 space-y-0.5">
-          {entries.map(([k, v]) => (
-            <li key={k}><span className="font-medium">{k}</span>: {String(v)}</li>
+        <div className="space-y-0.5">
+          {rows.map(([label, val]) => (
+            <p key={label}>
+              <span className="font-medium">{label}:</span> {String(val)}
+            </p>
           ))}
-        </ul>
+        </div>
       </div>
     );
   };
 
-  // ===== بطاقة الهدية لكل منتج =====
+  // ===== بطاقة الهدية لكل منتج — شكل عادي وفقرات =====
   const hasGiftValues = (gc) => {
     if (!gc || typeof gc !== 'object') return false;
     const v = (x) => (x ?? '').toString().trim();
     return !!(v(gc.from) || v(gc.to) || v(gc.phone) || v(gc.note));
   };
+
   const renderGiftCard = (gc) => {
     if (!hasGiftValues(gc)) return null;
     return (
-      <div className="mt-2 p-2 rounded-md bg-pink-50 border border-pink-200 text-[12px] text-pink-900 space-y-0.5">
-        <div className="font-semibold text-pink-700">بطاقة هدية</div>
-        {gc.from && String(gc.from).trim() && <div>من: {gc.from}</div>}
-        {gc.to && String(gc.to).trim() && <div>إلى: {gc.to}</div>}
-        {gc.phone && String(gc.phone).trim() && <div>رقم المستلم: {gc.phone}</div>}
-        {gc.note && String(gc.note).trim() && <div>ملاحظات: {gc.note}</div>}
+      <div className="mt-2 p-2 rounded-md border border-gray-200 bg-white text-[12px] text-gray-700">
+        <p className="font-semibold text-[#64472b] mb-1">بطاقة هدية</p>
+        {gc.from && <p>من: {gc.from}</p>}
+        {gc.to && <p>إلى: {gc.to}</p>}
+        {gc.phone && <p>رقم المستلم: {gc.phone}</p>}
+        {gc.note && <p>ملاحظات: {gc.note}</p>}
       </div>
     );
   };
@@ -248,7 +267,7 @@ ${linesProducts}${depositBlock}
               id="order-details"
               dir="rtl"
             >
-{/* ===== إصلاح الطباعة والـ PDF: توحيد المظهر وإجبار إظهار قسم المنتجات داخل الـ PDF حتى على الشاشات الصغيرة ===== */}
+{/* ===== إصلاح الطباعة والـ PDF ===== */}
 <style>
 {`
   @media print {
@@ -302,10 +321,6 @@ ${linesProducts}${depositBlock}
     .screen-only { display: none !important; }
   }
 
-  /* ================= PDF MODE =================
-     html2pdf يستخدم CSS شاشة، لذلك نكرر القواعد داخل .for-pdf
-     ونضيف Override لعرض قسم "المنتجات المطلوبة" دائماً.
-  */
   .for-pdf.print-modal, .for-pdf.print-modal * { visibility: visible !important; }
 
   .for-pdf {
@@ -348,10 +363,6 @@ ${linesProducts}${depositBlock}
   .for-pdf .invoice-meta { text-align: left !important; font-size: 10px !important; }
 
   .for-pdf button, .for-pdf .screen-only { display: none !important; }
-
-  /* 👇 أهم جزء لإظهار "المنتجات المطلوبة" داخل PDF حتى لو كان العرض Mobile:
-     عناصر الجدول لديك مخفية بـ .hidden md:block
-     هنا نجبر إظهارها داخل .for-pdf، ونخفي نسخة الموبايل لتجنّب التكرار. */
   .for-pdf .hidden { display: block !important; }
   .for-pdf .md\\:block { display: block !important; }
   .for-pdf .md\\:hidden { display: none !important; }
@@ -395,8 +406,8 @@ ${linesProducts}${depositBlock}
 
               {/* بطاقة هدية على مستوى الطلب (إن وُجدت) */}
               {viewOrder?.giftCard && (viewOrder.giftCard.from || viewOrder.giftCard.to || viewOrder.giftCard.phone || viewOrder.giftCard.note) && (
-                <div className="bg-pink-50 p-3 rounded-lg mb-6 border border-pink-200 print-section">
-                  <h3 className="font-bold text-base md:text-lg mb-2 border-b pb-2">بيانات بطاقة الهدية</h3>
+                <div className="bg-white border border-gray-200 p-3 rounded-lg mb-6 print-section">
+                  <h3 className="font-bold text-base md:text-lg mb-2 border-b pb-2 text-[#64472b]">بطاقة هدية</h3>
                   <div className="space-y-1 text-sm">
                     {viewOrder.giftCard.from && <p><strong>من:</strong> {viewOrder.giftCard.from}</p>}
                     {viewOrder.giftCard.to && <p><strong>إلى:</strong> {viewOrder.giftCard.to}</p>}
@@ -429,7 +440,7 @@ ${linesProducts}${depositBlock}
                               <img
                                 src={product.image || '/images/placeholder.jpg'}
                                 alt={product.name || 'منتج'}
-                                className="w-12 h-12 object-cover rounded mx-auto"
+                                className="w-14 h-24 object-cover rounded mx-auto"
                                 onError={(e) => {
                                   e.target.src = '/images/placeholder.jpg';
                                   e.target.alt = 'صورة غير متوفرة';
@@ -475,7 +486,6 @@ ${linesProducts}${depositBlock}
                           <div className="flex-grow">
                             <p className="font-medium text-sm">{product.name || 'منتج غير محدد'}</p>
                             {product.selectedSize && <p className="text-xs text-gray-500">الحجم: {product.selectedSize}</p>}
-                            {product.selectedColor && <p className="text-xs text-gray-500">اللون: {product.selectedColor}</p>}
                             {renderMeasurements(product.measurements)}
                             {renderGiftCard(product.giftCard)}
                             <div className="flex justify-between mt-1">

@@ -1,25 +1,20 @@
 // HeroSection.jsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import card1 from "../../assets/IMG_0064.jpg";
-import card2 from "../../assets/IMG_3440.png";
-import card3 from "../../assets/IMG_3441.png";
-import card4 from "../../assets/IMG_0067.jpg";
-import log from "../../assets/Screenshot_2025-08-23_183158-removebg-preview.png"; // شعار الأنثور
+import card1 from "../../assets/IMG_7112.PNG";
+import card2 from "../../assets/IMG_7110.PNG";
+import log from "../../assets/00-1.png"; // شعار الأنثور
 
 const cards = [
   { id: 1, image: card1, trend: '  ', title: 'تفصيل العبايات' },
-  { id: 4, image: card4, trend: ' ',  title: 'دريسات' },
-  { id: 2, image: card2, trend: '  ', title: 'الشيلات' },
-  { id: 3, image: card3, trend: '  ', title: 'العطور' },
+  { id: 2, image: card2, trend: ' ',  title: 'الملابس' },
+
 ];
 
 // خريطة ربط عناوين الكروت مع فلاتر المتجر الموجودة
 const categoryMap = {
   'تفصيل العبايات': 'تفصيل العبايات',
-  'دريسات': 'دريسات',
-  'العطور': 'العطور',
-  'الشيلات': 'الشيلات سادة', // ينقله مباشرة لفلتر الشيلات
+  'ملابس مناسبات': 'ملابس مناسبات',
 };
 
 const HeroSection = () => {
@@ -31,14 +26,14 @@ const HeroSection = () => {
   };
 
   return (
-    <section className=' px-4 py-8'>
+    <section className=' px-4 py-10'>
       <div className="relative text-center" dir="rtl">
-        <h2 className="text-[32px] font-normal text-[#CB908B] mb-1">أستكشف مجموعاتنا المميزة</h2>
-        <p className="text-[32px] font-bold text-[#3c3c3c] mb-4">عبر أقسامنا الفريدة</p>
+        <h2 className="text-[32px] font-normal text-[#64472b] mb-1">أستكشف مجموعاتنا المميزة</h2>
+        <p className="text-[32px] font-bold text-[#3c3c3c] ">عبر أقسامنا الفريدة</p>
 
         <div className="flex items-center justify-center gap-3 relative z-10">
           <span className="flex-1 max-w-[100px] h-px bg-[#c8c5b9]"></span>
-          <img src={log} alt="شعار الأنثور" className="h-20 w-auto object-contain" />
+          <img src={log} alt="شعار الأنثور" className="h-28 w-auto object-contain" />
           <span className="flex-1 max-w-[100px] h-px bg-[#c8c5b9]"></span>
         </div>
       </div>

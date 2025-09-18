@@ -13,7 +13,6 @@ const Card = () => {
   const [giftPhone, setGiftPhone] = useState(giftCardFromStore?.phone || '');
   const [giftNote, setGiftNote]   = useState(giftCardFromStore?.note  || '');
 
-  // كلما تغيرت الحقول، نسجّلها في الـRedux (ولو كلها فاضية تتحوّل null تلقائياً في reducer)
   useEffect(() => {
     if (!showGift) {
       dispatch(clearGiftCard());
@@ -27,18 +26,18 @@ const Card = () => {
       <button
         type="button"
         onClick={() => setShowGift((v) => !v)}
-        className="px-3 py-1 text-sm rounded-md border border-[#CB908B] text-[#CB908B] hover:bg-[#CB908B] hover:text-white transition"
+        className="px-3 py-1 text-sm rounded-md border border-[#64472b] text-[#64472b] hover:bg-[#64472b] hover:text-white transition"
       >
         بطاقة هدية ؟
       </button>
 
       {showGift && (
-        <div className="mt-3 p-3 border rounded-md bg-pink-50/40 space-y-3">
+        <div className="mt-3 p-3 border rounded-md space-y-3">
           <div>
             <label className="block text-gray-700 mb-1">من</label>
             <input
               type="text"
-              className="w-full p-2 border rounded-md"
+              className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#64472b]/50"
               value={giftFrom}
               onChange={(e) => setGiftFrom(e.target.value)}
               placeholder="اسم المُرسِل"
@@ -49,7 +48,7 @@ const Card = () => {
             <label className="block text-gray-700 mb-1">إلى</label>
             <input
               type="text"
-              className="w-full p-2 border rounded-md"
+              className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#64472b]/50"
               value={giftTo}
               onChange={(e) => setGiftTo(e.target.value)}
               placeholder="اسم المُستلم"
@@ -60,7 +59,7 @@ const Card = () => {
             <label className="block text-gray-700 mb-1">الرقم (رقم المستلم)</label>
             <input
               type="tel"
-              className="w-full p-2 border rounded-md"
+              className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#64472b]/50"
               value={giftPhone}
               onChange={(e) => setGiftPhone(e.target.value)}
               placeholder="مثال: 9XXXXXXXX"
@@ -70,7 +69,7 @@ const Card = () => {
           <div>
             <label className="block text-gray-700 mb-1">ملاحظات الهدية</label>
             <textarea
-              className="w-full p-2 border rounded-md"
+              className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#64472b]/50"
               value={giftNote}
               onChange={(e) => setGiftNote(e.target.value)}
               placeholder="رسالة قصيرة تُرفق مع الهدية (اختياري)"

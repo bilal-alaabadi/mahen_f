@@ -11,6 +11,7 @@ const ProductCards = ({ products }) => {
   const [addedItems, setAddedItems] = useState({});
   const { country } = useSelector((state) => state.cart);
 
+  // ✅ نفس منطق العملة المستخدم لديك، مع دعم "دول الخليج"
   const isAEDCountry = country === 'الإمارات' || country === 'دول الخليج';
   const currency = isAEDCountry ? 'د.إ' : 'ر.ع.';
   const exchangeRate = isAEDCountry ? 9.5 : 1;
@@ -45,7 +46,6 @@ const ProductCards = ({ products }) => {
       navigate(`/shop/${productId}`);
       return;
     }
-
     const originalPrice = product.regularPrice || product.price || 0;
     dispatch(addToCart({ ...product, price: originalPrice }));
     setAddedItems((prev) => ({ ...prev, [productId]: true }));
@@ -54,6 +54,7 @@ const ProductCards = ({ products }) => {
     }, 1000);
   };
 
+  // ✅ تنسيق السعر ليتطابق مع TrendingProducts (خط أحمر للسعر القديم + تمركز)
   const renderPrice = (product) => {
     const price = getProductPrice(product);
     const oldPrice = product.oldPrice ? product.oldPrice * exchangeRate : null;
@@ -65,7 +66,7 @@ const ProductCards = ({ products }) => {
           {price.toFixed(2)} {currency}
         </div>
         {hasRealDiscount && oldPrice && (
-          <s className="text-[#9B2D1F] text-sm">{oldPrice.toFixed(2)} {currency}</s>
+          <s className="text-red-500 text-sm">{oldPrice.toFixed(2)} {currency}</s>
         )}
       </div>
     );
@@ -92,7 +93,7 @@ const ProductCards = ({ products }) => {
             className='product__card bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 relative flex flex-col h-full'
           >
             {hasRealDiscount && (
-              <div className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full z-10">
+              <div className="absolute top-3 left-3 bg-[#64472b] text-white text-xs font-bold px-2 py-1 rounded-full z-10">
                 خصم {discountPercentage}%
               </div>
             )}
@@ -100,7 +101,8 @@ const ProductCards = ({ products }) => {
             <div className='relative flex-grow'>
               {!isOutOfStock ? (
                 <Link to={`/shop/${product._id}`} className="block h-full">
-                  <div className="h-64 w-full overflow-hidden">
+                  {/* ✅ مطابقة ارتفاع الصورة مع TrendingProducts */}
+                  <div className="h-80 w-full overflow-hidden">
                     <img
                       src={product.image?.[0] || "https://via.placeholder.com/300"}
                       alt={product.name || "صورة المنتج"}
@@ -114,7 +116,8 @@ const ProductCards = ({ products }) => {
                 </Link>
               ) : (
                 <div className="block h-full cursor-not-allowed select-none relative" aria-disabled="true">
-                  <div className="h-64 w-full overflow-hidden">
+                  {/* ✅ نفس الارتفاع للحالة خارج المخزون */}
+                  <div className="h-80 w-full overflow-hidden">
                     <img
                       src={product.image?.[0] || "https://via.placeholder.com/300"}
                       alt={product.name || "صورة المنتج"}
@@ -131,7 +134,7 @@ const ProductCards = ({ products }) => {
                 </div>
               )}
 
-              <div className='absolute top-3 right-3 ' >
+              <div className='absolute top-3 right-3'>
                 {!isOutOfStock ? (
                   <button
                     onClick={(e) => {
@@ -139,7 +142,7 @@ const ProductCards = ({ products }) => {
                       handleAddToCart(product._id, product);
                     }}
                     className={`p-2 text-white rounded-full shadow-md transition-all duration-300 ${
-                      addedItems[product._id] ? 'bg-green-500' : 'bg-[#CB908B]'
+                      addedItems[product._id] ? 'bg-green-500' : 'bg-[#64472b]'
                     }`}
                     aria-label="إضافة إلى السلة"
                   >
@@ -157,9 +160,17 @@ const ProductCards = ({ products }) => {
               </div>
             </div>
 
+            {/* ✅ تمركز النص + نفس تنسيق العنوان المستخدم في TrendingProducts */}
             <div className='p-4 text-center'>
-              <h4 className="text-lg font-semibold mb-1">{product.name || "اسم المنتج"}</h4>
-              <p className="text-gray-500 text-sm mb-3">{product.category || "فئة غير محددة"}</p>
+              <h4
+                className="text-lg font-semibold mb-1 line-clamp-2"
+                title={product.name}
+              >
+                {product.name || "اسم المنتج"}
+              </h4>
+              <p className="text-gray-500 text-sm mb-3">
+                {product.category || "فئة غير محددة"}
+              </p>
               {renderPrice(product)}
             </div>
           </div>
